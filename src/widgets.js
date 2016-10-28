@@ -1,5 +1,5 @@
 /**
- * Widgets manipulation
+ * Groups
  ******************************************************************************/
 
 function Group( $el ) {
@@ -22,6 +22,10 @@ Group.prototype.disable = function () {
     }
 };
 
+/**
+ * Number Slider
+ ******************************************************************************/
+
 function NumberSlider( $el ) {
     this.$el = $el;
 }
@@ -32,6 +36,9 @@ NumberSlider.prototype.setValue = function ( value ) {
     this.$el.find( '.number-widget input.value' ).val( value ).trigger( 'change' );
 }
 
+/**
+ * Image Number Slider
+ ******************************************************************************/
 function ImageNumberSlider( $el ) {
     this.$el = $el;
 }
@@ -68,12 +75,9 @@ ImageNumberSlider.prototype.setTexture = function ( name ) {
     } );
 }
 
-function enableGroup( group ) {
-    if ( !group.hasClass( 'active' ) ) {
-        group.find( '.state' ).trigger( 'click' );
-    }
-}
-
+/**
+ * Toggle Button
+ ******************************************************************************/
 function ToggleButton( $el ) {
     this.$el = $el;
 }
@@ -94,6 +98,9 @@ ToggleButton.prototype.setValue = function ( value ) {
     }
 }
 
+/**
+ * Checkbox
+ ******************************************************************************/
 function Checkbox( $el ) {
     this.$el = $el;
 }
@@ -120,6 +127,15 @@ Checkbox.prototype.setValue = function ( checked ) {
     }
 }
 
+/**
+ * Utilities
+ ******************************************************************************/
+function enableGroup( group ) {
+    if ( !group.hasClass( 'active' ) ) {
+        group.find( '.state' ).trigger( 'click' );
+    }
+}
+
 function disableGroup( group ) {
     if ( group.hasClass( 'active' ) ) {
         group.find( '.state' ).trigger( 'click' );
@@ -129,16 +145,6 @@ function disableGroup( group ) {
 function setValueNumberedSlider( numberedSlider, value ) {
     var $input = numberedSlider.find( 'input.value' );
     $input.val( value ).trigger( 'change' );
-}
-
-function clamp( value, min, max ) {
-    if ( value < min ) {
-        return min;
-    }
-    if ( value > max ) {
-        return max;
-    }
-    return value;
 }
 
 function isGroupEnabled( groupWidget ) {

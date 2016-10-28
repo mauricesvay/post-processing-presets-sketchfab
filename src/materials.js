@@ -1,19 +1,19 @@
-/**
- * Inject Materials extras
- ******************************************************************************/
-var materialsPanelReady = false;
-observeDOM( document.body, function () {
-    var panel = $( '[data-panel="materials"] .group-widget' );
-    if ( panel.length ) {
+function initializeMaterials() {
+    console.info( 'Initializing materials extensions' );
 
-        if ( materialsPanelReady === false ) {
-            onMaterialsReady();
-            materialsPanelReady = true;
+    var materialsPanelReady = false;
+    observeDOM( document.body, function () {
+        var panel = $( '[data-panel="materials"] .group-widget' );
+        if ( panel.length ) {
+
+            if ( materialsPanelReady === false ) {
+                onMaterialsReady();
+                materialsPanelReady = true;
+            }
+
         }
-
-    }
-} );
-
+    } );
+}
 
 /**
  * Materials

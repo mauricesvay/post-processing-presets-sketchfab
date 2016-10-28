@@ -147,6 +147,16 @@ function exportMaterial() {
                 'glossinessMap': widgetValues.sliderImageValues[ 5 ]
             }
         },
+        function displacement( $el ) {
+            var widgetValues = collectWidgetValues( $el );
+            return {
+                'enabled': widgetValues.enabled,
+
+                'displacementValue': widgetValues.sliderImageValues[ 0 ],
+                'displacementColor': widgetValues.sliderImageValues[ 1 ],
+                'displacementMap': widgetValues.sliderImageValues[ 2 ]
+            }
+        },
         function normalBump( $el ) {
             var widgetValues = collectWidgetValues( $el );
             return {
@@ -459,6 +469,25 @@ function importMaterial() {
                     widgets.sliderImage[ 1 ].setTexture( value );
                 },
             }
+            applyToWidgets( widgets, options, funcs );
+        },
+        function displacement( $el, options ) {
+            var widgets = collectWidgets( $el );
+            var funcs = {
+                "enabled": function ( value ) {
+                    value ? widgets.group[ 0 ].enable() : widgets.group[ 0 ].disable()
+                },
+
+                "displacementValue": function ( value ) {
+                    widgets.sliderImage[ 0 ].setValue( value );
+                },
+                "displacementColor": function ( value ) {
+                    widgets.sliderImage[ 0 ].setColor( value );
+                },
+                "displacementMap": function ( value ) {
+                    widgets.sliderImage[ 0 ].setTexture( value );
+                }
+            };
             applyToWidgets( widgets, options, funcs );
         },
         function normalBump( $el, options ) {

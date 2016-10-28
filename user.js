@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          Sketchfab Post-Process Presets
 // @namespace     https://github.com/PadreZippo/post-processing-presets-sketchfab
-// @version       0.1.0
+// @version       0.2.0
 // @updateURL     https://raw.githubusercontent.com/PadreZippo/post-processing-presets-sketchfab/master/user.js
 // @downloadURL   https://raw.githubusercontent.com/PadreZippo/post-processing-presets-sketchfab/master/user.js
 // @description   Stores post-processing presets
@@ -19,6 +19,37 @@ console.log( 'Custom presets: ' + GM_listValues() );
 
 var $ = unsafeWindow.publicLibraries.$,
     _ = unsafeWindow.publicLibraries._;
+
+//http://stackoverflow.com/questions/3219758/detect-changes-in-the-dom
+var observeDOM = ( function () {
+    var MutationObserver = window.MutationObserver || window.WebKitMutationObserver,
+        eventListenerSupported = window.addEventListener;
+
+    return function ( obj, callback ) {
+        if ( MutationObserver ) {
+            // define a new observer
+            var obs = new MutationObserver( function ( mutations, observer ) {
+                if ( mutations[ 0 ].addedNodes.length || mutations[ 0 ].removedNodes.length )
+                    callback();
+            } );
+            // have the observer observe foo for changes in children
+            obs.observe( obj, {
+                childList: true,
+                subtree: true
+            } );
+        } else if ( eventListenerSupported ) {
+            obj.addEventListener( 'DOMNodeInserted', callback, false );
+            obj.addEventListener( 'DOMNodeRemoved', callback, false );
+        }
+    };
+} )();
+
+function initialize() {
+    initializePostProcessing();
+    initializeMaterials();
+}
+
+initialize();
 /**
  * https://github.com/gamtiq/extend
  ******************************************************************************/
@@ -104,8 +135,21 @@ var $ = unsafeWindow.publicLibraries.$,
 
     return extend;
 } ) );
+
 /**
- * Widgets manipulation
+ * Clamp
+ ******************************************************************************/
+function clamp( value, min, max ) {
+    if ( value < min ) {
+        return min;
+    }
+    if ( value > max ) {
+        return max;
+    }
+    return value;
+}
+/**
+ * Groups
  ******************************************************************************/
 
 function Group( $el ) {
@@ -128,6 +172,10 @@ Group.prototype.disable = function () {
     }
 };
 
+/**
+ * Number Slider
+ ******************************************************************************/
+
 function NumberSlider( $el ) {
     this.$el = $el;
 }
@@ -138,6 +186,9 @@ NumberSlider.prototype.setValue = function ( value ) {
     this.$el.find( '.number-widget input.value' ).val( value ).trigger( 'change' );
 }
 
+/**
+ * Image Number Slider
+ ******************************************************************************/
 function ImageNumberSlider( $el ) {
     this.$el = $el;
 }
@@ -174,12 +225,9 @@ ImageNumberSlider.prototype.setTexture = function ( name ) {
     } );
 }
 
-function enableGroup( group ) {
-    if ( !group.hasClass( 'active' ) ) {
-        group.find( '.state' ).trigger( 'click' );
-    }
-}
-
+/**
+ * Toggle Button
+ ******************************************************************************/
 function ToggleButton( $el ) {
     this.$el = $el;
 }
@@ -200,6 +248,9 @@ ToggleButton.prototype.setValue = function ( value ) {
     }
 }
 
+/**
+ * Checkbox
+ ******************************************************************************/
 function Checkbox( $el ) {
     this.$el = $el;
 }
@@ -226,6 +277,15 @@ Checkbox.prototype.setValue = function ( checked ) {
     }
 }
 
+/**
+ * Utilities
+ ******************************************************************************/
+function enableGroup( group ) {
+    if ( !group.hasClass( 'active' ) ) {
+        group.find( '.state' ).trigger( 'click' );
+    }
+}
+
 function disableGroup( group ) {
     if ( group.hasClass( 'active' ) ) {
         group.find( '.state' ).trigger( 'click' );
@@ -237,16 +297,6 @@ function setValueNumberedSlider( numberedSlider, value ) {
     $input.val( value ).trigger( 'change' );
 }
 
-function clamp( value, min, max ) {
-    if ( value < min ) {
-        return min;
-    }
-    if ( value > max ) {
-        return max;
-    }
-    return value;
-}
-
 function isGroupEnabled( groupWidget ) {
     return groupWidget.hasClass( 'active' );
 }
@@ -254,6 +304,23 @@ function isGroupEnabled( groupWidget ) {
 function getSliderValue( numberedSlider ) {
     return numberedSlider.find( 'input.value' ).val();
 }
+function initializePostProcessing() {
+    console.info( 'Initializing post-processing extensions' );
+
+    var postProcessGroupReady = false;
+    observeDOM( document.body, function () {
+        var postProcessGroup = $( '#PostProcessGroup' );
+        if ( postProcessGroup.length ) {
+
+            if ( postProcessGroupReady === false ) {
+                onPostProcessReady();
+                postProcessGroupReady = true;
+            }
+
+        }
+    } );
+}
+
 /**
  * Presets
  ******************************************************************************/
@@ -1090,43 +1157,6 @@ function getColorBalance( groupWidget ) {
  * Extras injection
  ******************************************************************************/
 
-// source: http://stackoverflow.com/questions/3219758/detect-changes-in-the-dom
-var observeDOM = ( function () {
-    var MutationObserver = window.MutationObserver || window.WebKitMutationObserver,
-        eventListenerSupported = window.addEventListener;
-
-    return function ( obj, callback ) {
-        if ( MutationObserver ) {
-            // define a new observer
-            var obs = new MutationObserver( function ( mutations, observer ) {
-                if ( mutations[ 0 ].addedNodes.length || mutations[ 0 ].removedNodes.length )
-                    callback();
-            } );
-            // have the observer observe foo for changes in children
-            obs.observe( obj, {
-                childList: true,
-                subtree: true
-            } );
-        } else if ( eventListenerSupported ) {
-            obj.addEventListener( 'DOMNodeInserted', callback, false );
-            obj.addEventListener( 'DOMNodeRemoved', callback, false );
-        }
-    };
-} )();
-
-var postProcessGroupReady = false;
-observeDOM( document.body, function () {
-    var postProcessGroup = $( '#PostProcessGroup' );
-    if ( postProcessGroup.length ) {
-
-        if ( postProcessGroupReady === false ) {
-            onPostProcessReady();
-            postProcessGroupReady = true;
-        }
-
-    }
-} );
-
 function onPostProcessReady() {
     $container = $( '#PostProcessGroup > .widget-wrapper > .inner' );
 
@@ -1175,22 +1205,38 @@ function loadPresets() {
         $presetDropdown.append( '<option value="' + i + '">' + presets[ i ].name + '</option>' );
     }
 }
-/**
- * Inject Materials extras
- ******************************************************************************/
-var materialsPanelReady = false;
-observeDOM( document.body, function () {
-    var panel = $( '[data-panel="materials"] .group-widget' );
-    if ( panel.length ) {
+function initializeMaterials() {
+    console.info( 'Initializing materials extensions' );
 
-        if ( materialsPanelReady === false ) {
-            onMaterialsReady();
-            materialsPanelReady = true;
+    var materialsPanelReady = false;
+    observeDOM( document.body, function () {
+        var panel = $( '[data-panel="materials"] .group-widget' );
+        if ( panel.length ) {
+
+            if ( materialsPanelReady === false ) {
+                onMaterialsReady();
+                materialsPanelReady = true;
+            }
+
         }
+    } );
 
-    }
-} );
-
+    var materialChannels = [
+        '#PBRGroup',
+        '#RoughnessGroup',
+        '#DiffuseColorGroup',
+        '#SpecularColorGroup',
+        '#DisplacementGroup',
+        '#NormalBumpGroup',
+        '#DiffuseIntensityGroup',
+        '#AOPBRGroup',
+        '#CavityPBRGroup',
+        '#OpacityGroup',
+        '#EmitColorGroup',
+        '#ReflectionGroup',
+        '#CullFaceGroup'
+    ];
+}
 
 /**
  * Materials
@@ -1322,6 +1368,16 @@ function exportMaterial() {
                 'glossinessValue': widgetValues.sliderImageValues[ 3 ],
                 'glossinessColor': widgetValues.sliderImageValues[ 4 ],
                 'glossinessMap': widgetValues.sliderImageValues[ 5 ]
+            }
+        },
+        function displacement( $el ) {
+            var widgetValues = collectWidgetValues( $el );
+            return {
+                'enabled': widgetValues.enabled,
+
+                'displacementValue': widgetValues.sliderImageValues[ 0 ],
+                'displacementColor': widgetValues.sliderImageValues[ 1 ],
+                'displacementMap': widgetValues.sliderImageValues[ 2 ]
             }
         },
         function normalBump( $el ) {
@@ -1636,6 +1692,25 @@ function importMaterial() {
                     widgets.sliderImage[ 1 ].setTexture( value );
                 },
             }
+            applyToWidgets( widgets, options, funcs );
+        },
+        function displacement( $el, options ) {
+            var widgets = collectWidgets( $el );
+            var funcs = {
+                "enabled": function ( value ) {
+                    value ? widgets.group[ 0 ].enable() : widgets.group[ 0 ].disable()
+                },
+
+                "displacementValue": function ( value ) {
+                    widgets.sliderImage[ 0 ].setValue( value );
+                },
+                "displacementColor": function ( value ) {
+                    widgets.sliderImage[ 0 ].setColor( value );
+                },
+                "displacementMap": function ( value ) {
+                    widgets.sliderImage[ 0 ].setTexture( value );
+                }
+            };
             applyToWidgets( widgets, options, funcs );
         },
         function normalBump( $el, options ) {

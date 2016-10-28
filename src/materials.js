@@ -13,6 +13,22 @@ function initializeMaterials() {
 
         }
     } );
+
+    var materialChannels = [
+        '#PBRGroup',
+        '#RoughnessGroup',
+        '#DiffuseColorGroup',
+        '#SpecularColorGroup',
+        '#DisplacementGroup',
+        '#NormalBumpGroup',
+        '#DiffuseIntensityGroup',
+        '#AOPBRGroup',
+        '#CavityPBRGroup',
+        '#OpacityGroup',
+        '#EmitColorGroup',
+        '#ReflectionGroup',
+        '#CullFaceGroup'
+    ];
 }
 
 /**

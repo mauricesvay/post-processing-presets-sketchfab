@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          Sketchfab Post-Process Presets
 // @namespace     https://github.com/PadreZippo/post-processing-presets-sketchfab
-// @version       0.2.0
+// @version       0.3.0
 // @updateURL     https://raw.githubusercontent.com/PadreZippo/post-processing-presets-sketchfab/master/user.js
 // @downloadURL   https://raw.githubusercontent.com/PadreZippo/post-processing-presets-sketchfab/master/user.js
 // @description   Stores post-processing presets
@@ -1245,15 +1245,60 @@ function onMaterialsReady() {
     $container = $( '[data-panel="materials"] > .vertical-widget > .widget-wrapper > .children' );
     $container.prepend( [
         '<div style="padding:15px 15px 5px 15px">',
-        '<button class="button btn-small" id="exportMaterial" type="button">Export</button>&nbsp;',
-        '<button class="button btn-small" id="importMaterial" type="button">Import</button>&nbsp;',
-        '<button class="button btn-small" id="downloadTextures" type="button">DL textures</button>&nbsp;',
+        '<select class="button btn-small" id="materialPresets"></select>&nbsp;',
+        '<button class="button btn-small" id="applyMaterial" type="button">Apply</button>&nbsp;',
+        '<button class="button btn-small" id="deleteMaterial" type="button">Delete</button>&nbsp;',
+        '<button class="button btn-small" id="saveMaterial" type="button">Save</button>&nbsp;',
+        '<button class="button btn-small" id="downloadTextures" type="button">DL Tex.</button>&nbsp;',
         '</div>'
     ].join( '' ) );
 
-    $( '#exportMaterial' ).on( 'click', exportMaterial );
-    $( '#importMaterial' ).on( 'click', importMaterial );
+    refreshMaterialList();
+
+    $( '#saveMaterial' ).on( 'click', saveMaterial );
+    $( '#deleteMaterial' ).on( 'click', deleteMaterial );
+    $( '#applyMaterial' ).on( 'click', applyMaterial );
     $( '#downloadTextures' ).on( 'click', downloadTextures );
+}
+
+function refreshMaterialList() {
+    var prefix = 'skfb_material_';
+    var db = GM_listValues();
+
+    var materials = db.filter( function ( name ) {
+        return ( name.indexOf( prefix ) === 0 )
+    } );
+    var options = materials.map( function ( name ) {
+        return '<option value="' + name + '">' + name.replace( prefix, '' ) + '</option>';
+    } );
+
+    $( '#materialPresets' ).html( options );
+}
+
+function saveMaterial() {
+    var materialName;
+    var prefix = 'skfb_material_';
+
+    if ( materialName = prompt( 'Enter a name for this material' ) ) {
+        var data = getCurrentMaterial();
+        materialName = prefix + materialName;
+        GM_setValue( materialName, JSON.stringify( data ) );
+        refreshMaterialList();
+    }
+}
+
+function deleteMaterial() {
+    var materialName = $( '#materialPresets' ).val();
+    GM_deleteValue( materialName );
+    refreshMaterialList();
+}
+
+function applyMaterial() {
+    var materialName = $( '#materialPresets' ).val();
+    var material = JSON.parse( GM_getValue( materialName, false ) );
+    if ( material ) {
+        setCurrentMaterial( material );
+    }
 }
 
 /**
@@ -1306,9 +1351,7 @@ function collectWidgetValues( $el ) {
     }
 }
 
-function exportMaterial() {
-
-
+function getCurrentMaterial() {
     var groups = [
         function pbrMaps( $el ) {
             var widgetValues = collectWidgetValues( $el );
@@ -1467,6 +1510,11 @@ function exportMaterial() {
         }
     } );
 
+    return material
+}
+
+function exportMaterial() {
+    var material = getCurrentMaterial();
     var win = window.open( '', 'material-export' );
     win.document.write( '<pre>' + JSON.stringify( material, null, 4 ) + '</pre>' );
 }
@@ -1554,21 +1602,7 @@ function applyToWidgets( widgets, options, funcs ) {
     }
 }
 
-function importMaterial() {
-
-    var material;
-    try {
-        material = JSON.parse( window.prompt() );
-    } catch ( e ) {
-        alert( 'Material is not valid' );
-        return;
-    }
-
-    if ( !material ) {
-        alert( 'Material is not valid' );
-        return;
-    }
-
+function setCurrentMaterial( material ) {
     var groups = [
         function pbrMaps( $el, options ) {
             var widgets = collectWidgets( $el );
@@ -1866,4 +1900,22 @@ function importMaterial() {
 
         }
     } );
+}
+
+function importMaterial() {
+
+    var material;
+    try {
+        material = JSON.parse( window.prompt() );
+    } catch ( e ) {
+        alert( 'Material is not valid' );
+        return;
+    }
+
+    if ( !material ) {
+        alert( 'Material is not valid' );
+        return;
+    }
+
+    setCurrentMaterial( material );
 }

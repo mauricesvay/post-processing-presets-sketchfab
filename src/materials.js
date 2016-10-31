@@ -38,11 +38,13 @@ function onMaterialsReady() {
     $container = $( '[data-panel="materials"] > .vertical-widget > .widget-wrapper > .children' );
     $container.prepend( [
         '<div style="padding:15px 15px 5px 15px">',
-        '<select class="button btn-small" id="materialPresets"></select>&nbsp;',
+        '<select class="button btn-small" id="materialPresets"></select><br>',
         '<button class="button btn-small" id="applyMaterial" type="button">Apply</button>&nbsp;',
         '<button class="button btn-small" id="deleteMaterial" type="button">Delete</button>&nbsp;',
-        '<button class="button btn-small" id="saveMaterial" type="button">Save</button>&nbsp;',
-        '<button class="button btn-small" id="downloadTextures" type="button">DL Tex.</button>&nbsp;',
+        '<button class="button btn-small" id="saveMaterial" type="button">Save</button><br>',
+        '<button class="button btn-small" id="exportMaterial" type="button">Export</button>&nbsp;',
+        '<button class="button btn-small" id="importMaterial" type="button">Import</button><br>',
+        '<button class="button btn-small" id="downloadTextures" type="button">Download all textures</button>',
         '</div>'
     ].join( '' ) );
 
@@ -51,6 +53,10 @@ function onMaterialsReady() {
     $( '#saveMaterial' ).on( 'click', saveMaterial );
     $( '#deleteMaterial' ).on( 'click', deleteMaterial );
     $( '#applyMaterial' ).on( 'click', applyMaterial );
+
+    $( '#exportMaterial' ).on( 'click', exportMaterial );
+    $( '#importMaterial' ).on( 'click', importMaterial );
+
     $( '#downloadTextures' ).on( 'click', downloadTextures );
 }
 
